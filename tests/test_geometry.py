@@ -910,6 +910,20 @@ def test_geometry_reassign_drops_old_dividers():
     assert all(node._cell is None for node in _all_geometry_nodes(old_geometry))
 
 
+def test_geometry_reassign_in_problem_drops_old_dividers():
+    problem = montepy.read_input("tests/inputs/test.imcnp")
+    cell = problem.cells[1]
+    assert _surface_numbers(cell.surfaces) == [1000]
+    cell.geometry = -problem.surfaces[1005]
+    assert _surface_numbers(cell.surfaces) == [1005]
+    complementing = problem.cells[5]
+    assert [c.number for c in complementing.complements] == [99]
+    assert complementing in problem.cells[99].cells_complementing_this
+    complementing.geometry = -problem.surfaces[1005]
+    assert len(complementing.complements) == 0
+    assert list(problem.cells[99].cells_complementing_this) == []
+
+
 def test_geometry_reassign_same_number():
     cell = montepy.Cell(number=1)
     cell.geometry = -_plane(1)
